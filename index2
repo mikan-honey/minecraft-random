@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ランダム言葉ジェネレーター</title>
+</head>
+<body>
+    <h1>ランダム言葉ジェネレーター</h1>
+
+    <!-- 言葉を手動で入力するフォーム -->
+    <h2>新しい言葉を追加</h2>
+    <form id="wordForm">
+        <label for="adjective">形容詞：</label>
+        <input type="text" id="adjective"><br><br>
+        <label for="noun">名詞：</label>
+        <input type="text" id="noun"><br><br>
+        <button type="submit">追加</button>
+    </form>
+
+    <!-- 登録された言葉を表示するエリア -->
+    <div class="word-list">
+        <h3>形容詞:</h3>
+        <ul id="adjectiveList"></ul>
+        <h3>名詞:</h3>
+        <ul id="nounList"></ul>
+    </div>
+
+    <!-- ランダムに組み合わせるボタン -->
+    <h2>ランダムな言葉を生成</h2>
+    <button id="generate">ランダム生成</button>
+
+    <!-- 結果を表示するエリア -->
+    <h2>結果</h2>
+    <p id="result">ここに結果が表示されます</p>
+
+    <script src="script.js"></script>
+</body>
+<body>
+	<header></header>
+	<main></main>
+	<footer></footer>
+	<script>
+const API_URL = 'http://localhost:5000/api/words';
+
+async function fetchWords() {
+    const response = await fetch(API_URL);
+    const words = await response.json();
+    updateWordLists(words);
+}
+
+async function addWord(adjective, noun) {
+    const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adjective, noun })
+    });
+    const newWord = await response.json();
+    fetchWords();
+}
+
+async function deleteWord(id) {
+    await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+    fetchWords();
+}
+
+document.getElementById('wordForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const adjective = document.getElementById('adjective').value.trim();
+    const noun = document.getElementById('noun').value.trim();
+    if (!adjective && !noun) {
+        alert("形容詞か名詞のどちらかを入力してください。");
+        return;
+    }
+    addWord(adjective, noun);
+    document.getElementById('wordForm').reset();
+});
+
+document.getElementById('generate').addEventListener('click', async function() {
+    const response = await fetch(API_URL);
+    const words = await response.json();
+    if (words.length === 0) {
+        document.getElementById('result').textContent = '言葉が登録されていません！';
+        return;
+    }
+    const randomWord = words[Math.floor(Math.random() * words.length)];
+    document.getElementById('result').textContent = `${randomWord.adjective} ${randomWord.noun}`;
+});
+
+function updateWordLists(words) {
+    const adjectiveList = document.getElementById('adjectiveList');
+    const nounList = document.getElementById('nounList');
+    adjectiveList.innerHTML = '';
+    nounList.innerHTML = '';
+
+    words.forEach(word => {
+        if (word.adjective) {
+            const li = document.createElement('li');
+            li.textContent = word.adjective;
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = '削除';
+            deleteButton.onclick = () => deleteWord(word._id);
+            li.appendChild(deleteButton);
+            adjectiveList.appendChild(li);
+        }
+        if (word.noun) {
+            const li = document.createElement('li');
+            li.textContent = word.noun;
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = '削除';
+            deleteButton.onclick = () => deleteWord(word._id);
+            li.appendChild(deleteButton);
+            nounList.appendChild(li);
+        }
+    });
+}
+
+fetchWords();
+	</script>
+</body>
+
+</html>

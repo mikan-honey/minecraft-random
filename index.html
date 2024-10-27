@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マイクラランダムお題</title>
+ 　<style>
+        /* 全体を中央揃え 
+
+        /* 全体を中央揃
+
+       
+
+        /* 全体を中央揃え */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }</style>
+</head>
+<body>
+    <h1>マイクラランダムお題</h1>
+
+    <!-- 言葉を入力するフォーム -->
+    <h2>新しい言葉を追加</h2>
+    <form id="wordForm">
+        <label for="adjective">どこで：</label>
+        <input type="text" id="adjective"><br><br>
+        <label for="noun">何しよう：</label>
+        <input type="text" id="noun"><br><br>
+        <button type="submit">追加</button>
+    </form>
+
+    <!-- 追加された言葉を表示するエリア -->
+    <h2>登録された言葉</h2>
+    <div>
+        <h3>どこで:</h3>
+        <ul id="adjectiveList"></ul> <!-- 場所 -->
+        <h3>何しよう:</h3>
+        <ul id="nounList"></ul> <!-- 動作 -->
+    </div>
+
+    <!-- ランダムに組み合わせるボタン -->
+    <h2>ランダムな言葉を生成</h2>
+    <button id="generate">ランダム生成</button>
+
+    <!-- 結果を表示するエリア -->
+    <h2>結果</h2>
+    <p id="result">ここに結果が表示されます</p>
+
+    <script src="script.js"></script>
+</body>
+<body>
+	<header></header>
+	<main></main>
+	<footer></footer>
+	<script>
+	// ローカルに保存されている言葉を取得（ない場合は空の配列を使う）
+let adjectives = JSON.parse(localStorage.getItem('adjectives')) || [];
+let nouns = JSON.parse(localStorage.getItem('nouns')) || [];
+
+// ページが読み込まれた際にリストを表示
+window.onload = function() {
+    updateWordLists();
+};
+
+// 言葉をフォームから追加する処理
+document.getElementById('wordForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const adjective = document.getElementById('adjective').value.trim();
+    const noun = document.getElementById('noun').value.trim();
+
+    // 両方が空白でないか確認
+    if (!adjective && !noun) {
+        alert("形容詞か名詞のどちらかを入力してください。");
+        return; // どちらも入力されていない場合は追加しない
+    }
+
+    // 形容詞が入力されていれば追加
+    if (adjective) {
+        adjectives.push(adjective);
+        localStorage.setItem('adjectives', JSON.stringify(adjectives));
+    }
+
+    // 名詞が入力されていれば追加
+    if (noun) {
+        nouns.push(noun);
+        localStorage.setItem('nouns', JSON.stringify(nouns));
+    }
+
+    // フォームをリセット
+    document.getElementById('wordForm').reset();
+
+    // 言葉リストを更新
+    updateWordLists();
+
+    alert('言葉が追加されました！');
+});
+
+// ランダムな言葉を生成する処理
+document.getElementById('generate').addEventListener('click', function() {
+    if (adjectives.length === 0 || nouns.length === 0) {
+        document.getElementById('result').textContent = '言葉が十分に登録されていません！';
+        return;
+    }
+
+    // ランダムなインデックスを生成
+    const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
+
+    // 結果を表示するエリアにテキストを設定
+    const resultElement = document.getElementById('result');
+    resultElement.textContent = `${randomAdjective} ${randomNoun}`;
+
+});
+
+// リストを更新する関数
+function updateWordLists() {
+    const adjectiveList = document.getElementById('adjectiveList');
+    const nounList = document.getElementById('nounList');
+
+    // 形容詞リストをクリアして再生成
+    adjectiveList.innerHTML = '';
+    adjectives.forEach(function(adjective, index) {
+        const li = document.createElement('li');
+        li.textContent = adjective;
+
+        // 削除ボタンを追加
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = '削除';
+        deleteButton.addEventListener('click', function() {
+            removeAdjective(index);
+        });
+
+        li.appendChild(deleteButton);
+        adjectiveList.appendChild(li);
+    });
+
+    // 名詞リストをクリアして再生成
+    nounList.innerHTML = '';
+    nouns.forEach(function(noun, index) {
+        const li = document.createElement('li');
+        li.textContent = noun;
+
+        // 削除ボタンを追加
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = '削除';
+        deleteButton.addEventListener('click', function() {
+            removeNoun(index);
+        });
+
+        li.appendChild(deleteButton);
+        nounList.appendChild(li);
+    });
+}
+
+// 形容詞を削除する関数
+function removeAdjective(index) {
+    adjectives.splice(index, 1);
+    localStorage.setItem('adjectives', JSON.stringify(adjectives));
+    updateWordLists();
+}
+
+// 名詞を削除する関数
+function removeNoun(index) {
+    nouns.splice(index, 1);
+    localStorage.setItem('nouns', JSON.stringify(nouns));
+    updateWordLists();
+}
+
+	</script>
+</body>
+
+</html>
